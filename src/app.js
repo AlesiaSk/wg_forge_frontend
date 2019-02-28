@@ -6,64 +6,64 @@ export default (function () {
     // next line is for example only
     document.getElementById('app').innerHTML = '<h1>Hello WG Forge</h1>';
 
-    const tableElement = document.createElement('TABLE');
-    document.body.appendChild(tableElement);
+    const ordersTable = document.createElement('TABLE');
+    document.body.appendChild(ordersTable);
 
 
-    const theadElement = document.createElement('THEAD');
-    tableElement.appendChild(theadElement);
+    const tableHead = document.createElement('THEAD');
+    ordersTable.appendChild(tableHead);
 
-    const trElement = document.createElement('TR');
-    theadElement.appendChild(trElement);
+    const tableRow = document.createElement('TR');
+    tableHead.appendChild(tableRow);
 
-    createTH('Transaction ID', trElement);
-    createTH('User Info', trElement);
-    createTH('Order Date', trElement);
-    createTH('Order Amount', trElement);
-    createTH('Card Number', trElement);
-    createTH('Card Type', trElement);
-    createTH('Location', trElement);
+    createTableHeader('Transaction ID', tableRow);
+    createTableHeader('User Info', tableRow);
+    createTableHeader('Order Date', tableRow);
+    createTableHeader('Order Amount', tableRow);
+    createTableHeader('Card Number', tableRow);
+    createTableHeader('Card Type', tableRow);
+    createTableHeader('Location', tableRow);
 
-    const tbodyElement = document.createElement('TBODY');
-    tableElement.appendChild(tbodyElement);
+    const tableBody = document.createElement('TBODY');
+    ordersTable.appendChild(tableBody);
 
     orders.forEach(order => {
-        createTRwithTD(order, tbodyElement);
+        createOrderRow(order, tableBody);
     });
 
-    function createTH(th_name, trElement){
-        const thElement = document.createElement('TH');
-        const textElement = document.createTextNode(th_name);
-        thElement.appendChild(textElement);
-        trElement.appendChild(thElement);
+    function createTableHeader(th_name, tableRow){
+        const tableHeader = document.createElement('TH');
+        const text = document.createTextNode(th_name);
+        tableHeader.appendChild(text);
+        tableRow.appendChild(tableHeader);
     }
 
-    function createTRwithTD(order, tbodyElement){
-        const trElement = document.createElement('TR');
-        trElement.setAttribute('id', `order_${order.id}`);
-        setTD(trElement, order.transaction_id);
-        setTD(trElement, order.user_id).className = 'user_data';
-        setTD(trElement, new Date(parseInt(order.created_at, 10)));
-        setTD(trElement, '$'+order.total);
-        setTD(trElement, getFormattedCardNumber(order.card_number));
-        setTD(trElement,order.card_number);
-        setTD(trElement, order.order_country);
-        setTD(trElement, order.order_ip);
-        tbodyElement.appendChild(trElement);
+    function createOrderRow(order, tableBody){
+        const tableRow = document.createElement('TR');
+        tableRow.setAttribute('id', `order_${order.id}`);
+        createCell(tableRow, order.transaction_id);
+        createCell(tableRow, order.user_id).className = 'user_data';
+        createCell(tableRow, new Date(parseInt(order.created_at, 10)));
+        createCell(tableRow, '$'+order.total);
+        createCell(tableRow, getFormattedCardNumber(order.card_number));
+        createCell(tableRow,order.card_number);
+        createCell(tableRow, order.order_country);
+        createCell(tableRow, order.order_ip);
+        tableBody.appendChild(tableRow);
     }
 
     function getFormattedCardNumber(cardNumber) {
         return cardNumber;
     }
 
-    function setTD(trElement, data){
-        const tdElement = document.createElement('TD');
+    function createCell(tableRow, data){
+        const tableData = document.createElement('TD');
         const text = document.createTextNode(data);
 
-        tdElement.appendChild(text);
-        trElement.appendChild(tdElement);
+        tableData.appendChild(text);
+        tableRow.appendChild(tableData);
 
-        return tdElement;
+        return tableData;
     }
 
 }());
