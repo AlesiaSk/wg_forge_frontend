@@ -2,30 +2,7 @@
 import orders from '../data/orders.json';
 
 export default (function () {
-    // YOUR CODE GOES HERE
-    // next line is for example only
-    document.getElementById('app').innerHTML = '<h1>Hello WG Forge</h1>';
-
-    const ordersTable = document.createElement('TABLE');
-    document.body.appendChild(ordersTable);
-
-
-    const tableHead = document.createElement('THEAD');
-    ordersTable.appendChild(tableHead);
-
-    const tableRow = document.createElement('TR');
-    tableHead.appendChild(tableRow);
-
-    createTableHeader('Transaction ID', tableRow);
-    createTableHeader('User Info', tableRow);
-    createTableHeader('Order Date', tableRow);
-    createTableHeader('Order Amount', tableRow);
-    createTableHeader('Card Number', tableRow);
-    createTableHeader('Card Type', tableRow);
-    createTableHeader('Location', tableRow);
-
-    const tableBody = document.createElement('TBODY');
-    ordersTable.appendChild(tableBody);
+    const tableBody = document.getElementById('orders_table_body');
 
     orders.forEach(order => {
         createOrderRow(order, tableBody);
@@ -53,7 +30,9 @@ export default (function () {
     }
 
     function getFormattedCardNumber(cardNumber) {
-        return cardNumber;
+        return cardNumber.split('').map((currentValue, index, array) => (
+            (index < 2 || index > array.length - 5) ? currentValue : '*'
+        )).join('');
     }
 
     function createCell(tableRow, data){
