@@ -7,22 +7,48 @@ import './styles.css';
 
 
 export default (function () {
+    const ordersData = getOrdersData();
     const tableBody = document.getElementById('orders_table_body');
 
     let currentCellWithArrow;
-    fillTableBody(orders);
+
+    fillTableBody(ordersData);
+
+    function getOrdersData() {
+        return orders.map(order => {
+            const user = users.find((currentUser) => {
+                    return currentUser.id === order.user_id;
+                }
+            );
+
+            const company = companies.find((currentCompany) => {
+                    return currentCompany.id === user.company_id;
+                }
+            );
+
+            return {
+                ...order,
+                created_at: parseInt(order.created_at, 10),
+                total: parseFloat(order.total),
+                user: user,
+                company: company,
+                userFullName: `${user.first_name} ${user.last_name}`
+
+            }
+        })
+    }
 
     const transactionIdHeaderElement = document.getElementById('transaction_id_header');
 
     transactionIdHeaderElement.onclick = function () {
-        fillTableBody(orders.sort((order1, order2) => order1.transaction_id.localeCompare(order2.transaction_id)));
+        fillTableBody(ordersData.sort((order1, order2) => order1.transaction_id.localeCompare(order2.transaction_id)));
         setArrowToElement(this);
     };
 
     const orderDateHeaderElement = document.getElementById('order_date_header');
 
     orderDateHeaderElement.onclick = function () {
-        fillTableBody(orders.sort((order1, order2) => {
+        fillTableBody(ordersData.sort((order1, order2) => {
             return order2.created_at > order1.created_at ? -1 : order2.created_at < order1.created_at ? 1 : 0;
         }));
         setArrowToElement(this);
@@ -31,8 +57,48 @@ export default (function () {
     const orderAmountHeaderElement = document.getElementById('order_amount_header');
 
     orderAmountHeaderElement.onclick = function () {
-        fillTableBody(orders.sort((order1, order2) => {
-            return order1.total > order2.total ? -1 : order1.total < order2.total ? 1 : 0;
+        fillTableBody(ordersData.sort((order1, order2) => {
+            return order1.total < order2.total ? -1 : order1.total > order2.total ? 1 : 0;
+        }));
+        setArrowToElement(this);
+    };
+
+    const userInfoHeaderElement = document.getElementById('user_info_header');
+
+    userInfoHeaderElement.onclick = function () {
+        fillTableBody(ordersData.sort((order1, order2) => {
+            return order1.userFullName < order2.userFullName ? -1 : order1.userFullName > order2.userFullName ? 1 : 0;
+        }));
+        setArrowToElement(this);
+    };
+
+    const cardTypeHeaderElement = document.getElementById('card_type_header');
+
+    cardTypeHeaderElement.onclick = function () {
+        fillTableBody(ordersData.sort((order1, order2) => {
+            return order1.card_type < order2.card_type ? -1 : order1.card_type > order2.card_type ? 1 : 0;
+        }));
+        setArrowToElement(this);
+    };
+
+    const locationHeaderElement = document.getElementById('location_header');
+
+    locationHeaderElement.onclick = function () {
+        fillTableBody(ordersData.sort((order1, order2) => {
+            if(order1.order_country.localeCompare(order2.order_country)< 0){
+                return -1;
+            }
+            if(order2.order_country.localeCompare(order1.order_country) > 0){
+                return 1;
+            }
+            if(order1.order_ip.localeCompare(order2.order_ip) < 0){
+                return 1;
+            }
+
+            if(order2.order_ip.localeCompare(order1.order_ip) > 0){
+                return -1;
+            }
+            return 0;
         }));
         setArrowToElement(this);
     };
@@ -50,12 +116,16 @@ export default (function () {
         currentCellWithArrow = element;
     }
 
-    function fillTableBody(orders) {
-        tableBody.innerHTML = "";
+    function fillTableBody(ordersData) {
+        clearTableBody();
 
-        orders.forEach(order => {
+        ordersData.forEach(order => {
             addTableRow(order, tableBody);
         });
+    }
+
+    function clearTableBody(){
+        tableBody.innerHTML = "";
     }
 
     function addTableRow(order, tableBody) {
@@ -63,7 +133,7 @@ export default (function () {
         tableRow.setAttribute('id', `order_${order.id}`);
         addTableCell(tableRow, order.transaction_id);
         addTableCell(tableRow, order.user_id, order).className = 'user_data';
-        addTableCell(tableRow, getFormattedDate(new Date(parseInt(order.created_at, 10))));
+        addTableCell(tableRow, getFormattedDate(new Date(order.created_at)));
         addTableCell(tableRow, '$' + order.total);
         addTableCell(tableRow, getFormattedCardNumber(order.card_number));
         addTableCell(tableRow, order.card_type);
@@ -131,31 +201,24 @@ export default (function () {
     }
 
     function addTableCell(tableRow, data, order) {
-        const tableData = document.createElement('TD');
+        const ordersData = document.createElement('TD');
 
         if (order) {
             const userDetailsElement = document.createElement('DIV');
-            const user = users.find((currentUser) => {
-                    return currentUser.id === order.user_id;
-                }
-            );
-
             const userLink = document.createElement('A');
+            const user = order.user;
+            const company = order.company;
+
             userLink.href = '#';
             const fullName = `${getGenderPrefix(user.gender)} ${user.first_name} ${user.last_name}`;
             userLink.appendChild(document.createTextNode(fullName));
-            tableData.appendChild(userLink);
+            ordersData.appendChild(userLink);
 
             userDetailsElement.className = "user-details hidden";
             userLink.onclick = function (event) {
                 event.preventDefault();
                 handleUserNameClick(userDetailsElement);
             };
-
-            const company = companies.find((currentCompany) => {
-                    return currentCompany.id === user.company_id;
-                }
-            );
 
             if (user.birthday) {
                 addParagraphWithText(userDetailsElement, getFormattedDate(new Date(parseInt(user.birthday, 10))));
@@ -168,14 +231,14 @@ export default (function () {
                 addParagraphWithLink(userDetailsElement, company.title, company.url);
                 addParagraphWithText(userDetailsElement, `Industry: ${company.industry}`);
             }
-            tableData.appendChild(userDetailsElement);
+            ordersData.appendChild(userDetailsElement);
 
         } else {
-            tableData.appendChild(document.createTextNode(data));
+            ordersData.appendChild(document.createTextNode(data));
         }
 
-        tableRow.appendChild(tableData);
+        tableRow.appendChild(ordersData);
 
-        return tableData;
+        return ordersData;
     }
 }());
