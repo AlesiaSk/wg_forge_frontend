@@ -16,6 +16,7 @@ export default (function () {
 
     transactionIdHeaderElement.onclick = function () {
         fillTableBody(orders.sort((order1, order2) => order1.transaction_id.localeCompare(order2.transaction_id)));
+        setArrowToElement(this);
     };
 
     const orderDateHeaderElement = document.getElementById('order_date_header');
@@ -23,7 +24,8 @@ export default (function () {
     orderDateHeaderElement.onclick = function () {
         fillTableBody(orders.sort((order1, order2) => {
             return order2.created_at > order1.created_at ? -1 : order2.created_at < order1.created_at ? 1 : 0;
-        }))
+        }));
+        setArrowToElement(this);
     };
 
     const orderAmountHeaderElement = document.getElementById('order_amount_header');
@@ -31,8 +33,22 @@ export default (function () {
     orderAmountHeaderElement.onclick = function () {
         fillTableBody(orders.sort((order1, order2) => {
             return order1.total > order2.total ? -1 : order1.total < order2.total ? 1 : 0;
-        }))
+        }));
+        setArrowToElement(this);
     };
+
+    function getArrowElement() {
+        const arrowSpan = document.createElement('SPAN');
+        arrowSpan.innerHTML = '&#8595';
+
+        return arrowSpan;
+    }
+
+    function setArrowToElement(element) {
+        currentCellWithArrow && currentCellWithArrow.removeChild(currentCellWithArrow.getElementsByTagName('SPAN')[0]);
+        element.appendChild(getArrowElement());
+        currentCellWithArrow = element;
+    }
 
     function fillTableBody(orders) {
         tableBody.innerHTML = "";
