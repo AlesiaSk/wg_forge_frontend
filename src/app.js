@@ -8,11 +8,16 @@ import './styles.css';
 
 export default (function () {
     const ordersData = getOrdersData();
+    let currentOrdersData = getOrdersData();
     const tableBody = document.getElementById('orders_table_body');
 
     let currentCellWithArrow;
 
-    fillTableBody(ordersData);
+    fillTableBody(currentOrdersData);
+
+    const inputElement = document.getElementById('search');
+
+    inputElement.addEventListener("input", (event) => search(event.target.value));
 
     function getOrdersData() {
         return orders.map(order => {
@@ -41,14 +46,14 @@ export default (function () {
     const transactionIdHeaderElement = document.getElementById('transaction_id_header');
 
     transactionIdHeaderElement.onclick = function () {
-        fillTableBody(ordersData.sort((order1, order2) => order1.transaction_id.localeCompare(order2.transaction_id)));
+        fillTableBody(currentOrdersData.sort((order1, order2) => order1.transaction_id.localeCompare(order2.transaction_id)));
         setArrowToElement(this);
     };
 
     const orderDateHeaderElement = document.getElementById('order_date_header');
 
     orderDateHeaderElement.onclick = function () {
-        fillTableBody(ordersData.sort((order1, order2) => {
+        fillTableBody(currentOrdersData.sort((order1, order2) => {
             return order2.created_at > order1.created_at ? -1 : order2.created_at < order1.created_at ? 1 : 0;
         }));
         setArrowToElement(this);
@@ -57,7 +62,7 @@ export default (function () {
     const orderAmountHeaderElement = document.getElementById('order_amount_header');
 
     orderAmountHeaderElement.onclick = function () {
-        fillTableBody(ordersData.sort((order1, order2) => {
+        fillTableBody(currentOrdersData.sort((order1, order2) => {
             return order1.total < order2.total ? -1 : order1.total > order2.total ? 1 : 0;
         }));
         setArrowToElement(this);
@@ -66,7 +71,7 @@ export default (function () {
     const userInfoHeaderElement = document.getElementById('user_info_header');
 
     userInfoHeaderElement.onclick = function () {
-        fillTableBody(ordersData.sort((order1, order2) => {
+        fillTableBody(currentOrdersData.sort((order1, order2) => {
             return order1.userFullName < order2.userFullName ? -1 : order1.userFullName > order2.userFullName ? 1 : 0;
         }));
         setArrowToElement(this);
@@ -75,7 +80,7 @@ export default (function () {
     const cardTypeHeaderElement = document.getElementById('card_type_header');
 
     cardTypeHeaderElement.onclick = function () {
-        fillTableBody(ordersData.sort((order1, order2) => {
+        fillTableBody(currentOrdersData.sort((order1, order2) => {
             return order1.card_type < order2.card_type ? -1 : order1.card_type > order2.card_type ? 1 : 0;
         }));
         setArrowToElement(this);
@@ -84,24 +89,36 @@ export default (function () {
     const locationHeaderElement = document.getElementById('location_header');
 
     locationHeaderElement.onclick = function () {
-        fillTableBody(ordersData.sort((order1, order2) => {
-            if(order1.order_country.localeCompare(order2.order_country)< 0){
+        fillTableBody(currentOrdersData.sort((order1, order2) => {
+            if (order1.order_country.localeCompare(order2.order_country) < 0) {
                 return -1;
             }
-            if(order2.order_country.localeCompare(order1.order_country) > 0){
+            if (order2.order_country.localeCompare(order1.order_country) > 0) {
                 return 1;
             }
-            if(order1.order_ip.localeCompare(order2.order_ip) < 0){
+            if (order1.order_ip.localeCompare(order2.order_ip) < 0) {
                 return 1;
             }
 
-            if(order2.order_ip.localeCompare(order1.order_ip) > 0){
+            if (order2.order_ip.localeCompare(order1.order_ip) > 0) {
                 return -1;
             }
             return 0;
         }));
         setArrowToElement(this);
     };
+
+    function search(dataFromUser) {
+        debugger;
+
+
+        currentOrdersData = ordersData.filter(order => {
+            return order.total.toString().includes(dataFromUser) || order.userFullName.includes(dataFromUser) || order.transaction_id.includes(dataFromUser) || order.card_type.includes(dataFromUser) || order.order_ip.includes(dataFromUser) || order.order_country.includes(dataFromUser);
+        });
+
+        fillTableBody(currentOrdersData);
+
+    }
 
     function getArrowElement() {
         const arrowSpan = document.createElement('SPAN');
@@ -116,15 +133,17 @@ export default (function () {
         currentCellWithArrow = element;
     }
 
-    function fillTableBody(ordersData) {
+    function fillTableBody(currentOrdersData) {
         clearTableBody();
 
-        ordersData.forEach(order => {
+        currentOrdersData.forEach(order => {
             addTableRow(order, tableBody);
         });
+
+        createStatistics();
     }
 
-    function clearTableBody(){
+    function clearTableBody() {
         tableBody.innerHTML = "";
     }
 
@@ -139,6 +158,81 @@ export default (function () {
         addTableCell(tableRow, order.card_type);
         addTableCell(tableRow, `${order.order_country} (${order.order_ip})`);
         tableBody.appendChild(tableRow);
+    }
+
+    function createStatistics() {
+        crateTableRowWithJointColumns('Orders Count');
+        crateTableRowWithJointColumns('Orders Total');
+        crateTableRowWithJointColumns('Median Value');
+        crateTableRowWithJointColumns('Average Check');
+        crateTableRowWithJointColumns('Average Check (Female)');
+        crateTableRowWithJointColumns('Average Check (Male)');
+    }
+
+    function crateTableRowWithJointColumns(name) {
+        let statisticsResult;
+        const tableRow = document.createElement('TR');
+        const dataHeader = addTableCell(tableRow, name);
+        dataHeader.colSpan = "4";
+        if (name === 'Orders Count') {
+            statisticsResult = addTableCell(tableRow, getTotalOrders(currentOrdersData));
+        } else if (name === 'Orders Total') {
+            statisticsResult = addTableCell(tableRow, `$ ${getTotalAmount(currentOrdersData)}`);
+        } else if (name === 'Median Value') {
+            statisticsResult = addTableCell(tableRow, `$ ${getMedian()}`);
+        } else if (name === 'Average Check') {
+            statisticsResult = addTableCell(tableRow, `$ ${getAverageCheck(currentOrdersData)}`);
+        } else if (name === 'Average Check (Female)') {
+            statisticsResult = addTableCell(tableRow, `$ ${getAverageCheck(getOrdersByGender('Female'))}`);
+        } else if (name === 'Average Check (Male)') {
+            statisticsResult = addTableCell(tableRow, `$ ${getAverageCheck(getOrdersByGender('Male'))}`);
+        }
+
+        statisticsResult.colSpan = "3";
+        tableBody.appendChild(tableRow);
+    }
+
+    function getTotalOrders(array) {
+        return array.length;
+    }
+
+    function getOrdersByGender(gender) {
+        return currentOrdersData.filter(order => {
+            return order.user.gender === gender;
+        });
+    }
+
+    function getAverageCheck(orderItems) {
+        return ((getTotalAmount(orderItems) / getTotalOrders(orderItems)).toFixed(2));
+    }
+
+    function getTotalAmount(array) {
+        return (array.reduce((amount, currentValue) => {
+            if (currentValue.total) {
+                return amount + parseFloat(currentValue.total);
+            } else {
+                return amount + parseFloat(currentValue);
+            }
+        }, 0)).toFixed(2);
+    }
+
+    function getMedian() {
+        const sortedOrderAmount = getDescendingSortingAmount();
+        const centralElementForOdd = (sortedOrderAmount[(sortedOrderAmount.length / 2) + 1] + sortedOrderAmount[(sortedOrderAmount.length / 2) + 1]) / 2;
+        if (sortedOrderAmount % 2 === 0) {
+            return sortedOrderAmount[((sortedOrderAmount.length + 1) / 2)];
+        } else {
+            return centralElementForOdd;
+        }
+    }
+
+    function getDescendingSortingAmount() {
+        const sortedOrdersTotal = currentOrdersData.sort((order1, order2) => {
+            return order1.total > order2.total ? -1 : order1.total < order2.total ? 1 : 0;
+        });
+
+        return sortedOrdersTotal.map((currentValue) => (
+            (currentValue.total)));
     }
 
     function getFormattedCardNumber(cardNumber) {
@@ -201,7 +295,7 @@ export default (function () {
     }
 
     function addTableCell(tableRow, data, order) {
-        const ordersData = document.createElement('TD');
+        const ordersDataElement = document.createElement('TD');
 
         if (order) {
             const userDetailsElement = document.createElement('DIV');
@@ -210,9 +304,9 @@ export default (function () {
             const company = order.company;
 
             userLink.href = '#';
-            const fullName = `${getGenderPrefix(user.gender)} ${user.first_name} ${user.last_name}`;
+            const fullName = `${getGenderPrefix(user.gender)} ${order.userFullName}`;
             userLink.appendChild(document.createTextNode(fullName));
-            ordersData.appendChild(userLink);
+            ordersDataElement.appendChild(userLink);
 
             userDetailsElement.className = "user-details hidden";
             userLink.onclick = function (event) {
@@ -231,14 +325,14 @@ export default (function () {
                 addParagraphWithLink(userDetailsElement, company.title, company.url);
                 addParagraphWithText(userDetailsElement, `Industry: ${company.industry}`);
             }
-            ordersData.appendChild(userDetailsElement);
+            ordersDataElement.appendChild(userDetailsElement);
 
         } else {
-            ordersData.appendChild(document.createTextNode(data));
+            ordersDataElement.appendChild(document.createTextNode(data));
         }
 
-        tableRow.appendChild(ordersData);
+        tableRow.appendChild(ordersDataElement);
 
-        return ordersData;
+        return ordersDataElement;
     }
 }());
