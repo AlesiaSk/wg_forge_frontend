@@ -10,10 +10,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default (function () {
     const tableBody = document.getElementById('orders_table_body');
-    const ordersData = getOrdersData();
-    let sortedData = ordersData;
-    //Сейчас не сохраняется сортинг. Добавить переменную, которая будет отдельно хранить фильтеринг.
     let currentOrdersData = getOrdersData();
+    let sortedData = currentOrdersData;
     let currentCellWithArrow;
 
     fillTableBody(currentOrdersData);
@@ -150,10 +148,14 @@ export default (function () {
     function addStatisticsSection() {
         crateTableRowWithJointColumns('Orders Count', currentOrdersData.length);
         crateTableRowWithJointColumns('Orders Total', `$ ${getTotalAmount(currentOrdersData)}`);
-        crateTableRowWithJointColumns('Median Value', `$ ${getMedian()}`);
-        crateTableRowWithJointColumns('Average Check', `$ ${getAverageCheck(currentOrdersData)}`);
-        crateTableRowWithJointColumns('Average Check (Female)', `$ ${getAverageCheck(getOrdersByGender('Female'))}`);
-        crateTableRowWithJointColumns('Average Check (Male)', `$ ${getAverageCheck(getOrdersByGender('Male'))}`);
+        crateTableRowWithJointColumns('Median Value', getFormattedStatistic(getMedian()));
+        crateTableRowWithJointColumns('Average Check', getFormattedStatistic(getAverageCheck(currentOrdersData)));
+        crateTableRowWithJointColumns('Average Check (Female)', getFormattedStatistic(getAverageCheck(getOrdersByGender('Female'))));
+        crateTableRowWithJointColumns('Average Check (Male)', getFormattedStatistic(getAverageCheck(getOrdersByGender('Male'))));
+    }
+
+    function getFormattedStatistic(value) {
+        return value ? `$ ${value}` : 'n/a';
     }
 
     function crateTableRowWithJointColumns(name, value) {
@@ -171,10 +173,11 @@ export default (function () {
     }
 
     function getAverageCheck(orderItems) {
-        return ((getTotalAmount(orderItems) / orderItems.length).toFixed(2));
+        return orderItems.length ? (getTotalAmount(orderItems) / orderItems.length).toFixed(2) : null;
     }
 
     function getTotalAmount(array) {
+        debugger;
         return (array.reduce((amount, currentValue) => {
             return amount + parseFloat(currentValue.total);
         }, 0)).toFixed(2);
@@ -182,11 +185,17 @@ export default (function () {
 
     function getMedian() {
         const sortedOrderAmount = getDescendingSortingAmount();
-        const centralElementForOdd = (sortedOrderAmount[(sortedOrderAmount.length / 2) + 1] + sortedOrderAmount[(sortedOrderAmount.length / 2) + 1]) / 2;
-        if (sortedOrderAmount % 2 === 0) {
-            return sortedOrderAmount[((sortedOrderAmount.length + 1) / 2)];
+        const sortedOrderAmountLength = sortedOrderAmount.length;
+
+        if (!sortedOrderAmountLength) {
+            return null;
+        }
+
+        if (sortedOrderAmountLength % 2 === 0) {
+            return (sortedOrderAmount[(sortedOrderAmountLength / 2) - 1] +
+                sortedOrderAmount[(sortedOrderAmountLength / 2)]) / 2;
         } else {
-            return centralElementForOdd;
+            return sortedOrderAmount[((sortedOrderAmountLength + 1) / 2) - 1];
         }
     }
 
