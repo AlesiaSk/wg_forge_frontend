@@ -67,19 +67,26 @@ export default (async function () {
     const locationHeaderElement = document.getElementById('location_header');
     locationHeaderElement.onclick = function () {
         sortedData.sort((order1, order2) => {
-            if (order1.order_country.localeCompare(order2.order_country) < 0) {
-                return -1;
-            }
-            if (order2.order_country.localeCompare(order1.order_country) > 0) {
-                return 1;
-            }
-            if (order1.order_ip.localeCompare(order2.order_ip) < 0) {
+            const countryCompareResult = order1.order_country.localeCompare(order2.order_country);
+
+            if (countryCompareResult > 0) {
                 return 1;
             }
 
-            if (order2.order_ip.localeCompare(order1.order_ip) > 0) {
+            if (countryCompareResult < 0) {
                 return -1;
             }
+
+            const ipCompareResult = order2.order_ip.localeCompare(order1.order_ip);
+
+            if (ipCompareResult > 0) {
+                return 1;
+            }
+
+            if (ipCompareResult < 0) {
+                return -1;
+            }
+
             return 0;
         });
         onTableHeaderClick();
@@ -158,7 +165,7 @@ export default (async function () {
         tableRow.setAttribute('id', `order_${order.id}`);
         addTableCell(tableRow, order.transaction_id);
         addTableCell(tableRow, order.user_id, order).className = 'user_data';
-        addTableCell(tableRow, getFormattedDate(new Date(order.created_at)));
+        addTableCell(tableRow, getFormattedDate(new Date(order.created_at), true));
         addTableCell(tableRow, '$' + order.total);
         addTableCell(tableRow, getFormattedCardNumber(order.card_number));
         addTableCell(tableRow, order.card_type);
@@ -289,8 +296,13 @@ export default (async function () {
         userDetailsElement.appendChild(paragraphElement);
     }
 
-    function getFormattedDate(date) {
-        return (`${date.getDate()}/${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()}`);
+    function getFormattedDate(date, withMinutes) {
+        if(withMinutes){
+            const period = date.getHours()>= 12 ? 'PM' : 'AM';
+            return (`${("0" + date.getDate()).slice(-2)} /${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()},
+             ${("0" + date.getHours()).slice(-2)}:${("0" + date.getMinutes()).slice(-2)}:${("0" + date.getSeconds()).slice(-2)} ${period}`);
+        }
+        return (`${("0" + date.getDate()).slice(-2)}/${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()}`);
     }
 
     function addTableCell(tableRow, data, order) {
