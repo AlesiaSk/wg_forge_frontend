@@ -1,13 +1,15 @@
-// this is an example of improting data from JSON
-import orders from '../data/orders.json';
-import users from '../data/users.json';
-import companies from '../data/companies.json';
-
 import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
-export default (function () {
+export default (async function () {
+    const ordersResponse = await fetch('http://localhost:9000/api/orders.json');
+    const orders = await ordersResponse.json();
+    const usersResponse = await fetch('http://localhost:9000/api/users.json');
+    const users = await usersResponse.json();
+    const companiesResponse = await fetch('http://localhost:9000/api/companies.json');
+    const companies = await companiesResponse.json();
+
     const tableBody = document.getElementById('orders_table_body');
     let currentOrdersData = getOrdersData();
     let sortedData = currentOrdersData;
