@@ -1,7 +1,6 @@
 import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
 export default (async function () {
     const ordersResponse = await fetch('http://localhost:9000/api/orders.json');
     const orders = await ordersResponse.json();
@@ -123,9 +122,9 @@ export default (async function () {
 
     function fillTableBody(currentOrdersData) {
         clearTableBody();
-
         if (currentOrdersData.length) {
             currentOrdersData.forEach(order => {
+
                 addTableRow(order, tableBody);
             });
             addStatisticsSection();
@@ -196,7 +195,7 @@ export default (async function () {
     }
 
     function getMedian() {
-        const sortedOrderAmount = getDescendingSortingAmount();
+        const sortedOrderAmount = getDescendingSortingAmount(currentOrdersData);
         const sortedOrderAmountLength = sortedOrderAmount.length;
 
         if (!sortedOrderAmountLength) {
@@ -211,8 +210,8 @@ export default (async function () {
         }
     }
 
-    function getDescendingSortingAmount() {
-        const sortedOrdersTotal = currentOrdersData.sort((order1, order2) => {
+    function getDescendingSortingAmount(currentOrdersData) {
+        const sortedOrdersTotal = currentOrdersData.concat().sort((order1, order2) => {
             return order1.total > order2.total ? -1 : order1.total < order2.total ? 1 : 0;
         });
 

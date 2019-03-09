@@ -18,10 +18,6 @@
     cursor: default;
 }
 
-.user_data {
-    word-break: break-word;
-}
-
 .user_data img {
     border-radius: 50%;
     background-color: lightgrey;
