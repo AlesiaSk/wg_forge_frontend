@@ -299,9 +299,12 @@ export default (async function () {
 
     function getFormattedDate(date, withMinutes) {
         if(withMinutes){
-            const period = date.getHours()>= 12 ? 'PM' : 'AM';
+            let hours = date.getHours();
+            const period = hours>= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
             return (`${("0" + date.getDate()).slice(-2)}/${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()},
-             ${("0" + date.getHours()).slice(-2)}:${("0" + date.getMinutes()).slice(-2)}:${("0" + date.getSeconds()).slice(-2)} ${period}`);
+             ${hours}:${("0" + date.getMinutes()).slice(-2)}:${("0" + date.getSeconds()).slice(-2)} ${period}`);
         }
         return (`${("0" + date.getDate()).slice(-2)}/${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()}`);
     }
