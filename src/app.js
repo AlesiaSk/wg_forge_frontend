@@ -21,9 +21,10 @@ export default (async function () {
     const searchElement = document.getElementById('search');
     searchElement.oninput = function (event) {
         currentSearchString = event.target.value;
-        const filteredOrders = getFilteredOrders(sortedData, currentSearchString);
-        fillTableBody(filteredOrders);
+        currentOrdersData = getFilteredOrders(sortedData, currentSearchString);
+        fillTableBody(currentOrdersData);
     };
+
 
     const transactionIdHeaderElement = document.getElementById('transaction_id_header');
     transactionIdHeaderElement.onclick = function () {
@@ -299,7 +300,7 @@ export default (async function () {
     function getFormattedDate(date, withMinutes) {
         if(withMinutes){
             const period = date.getHours()>= 12 ? 'PM' : 'AM';
-            return (`${("0" + date.getDate()).slice(-2)} /${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()},
+            return (`${("0" + date.getDate()).slice(-2)}/${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()},
              ${("0" + date.getHours()).slice(-2)}:${("0" + date.getMinutes()).slice(-2)}:${("0" + date.getSeconds()).slice(-2)} ${period}`);
         }
         return (`${("0" + date.getDate()).slice(-2)}/${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()}`);
