@@ -4,20 +4,77 @@ import users from '../data/users.json';
 import companies from '../data/companies.json';
 
 import './styles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 
 export default (function () {
-    const ordersData = getOrdersData();
-    let currentOrdersData = getOrdersData();
     const tableBody = document.getElementById('orders_table_body');
-
+    const ordersData = getOrdersData();
+    let sortedData = ordersData;
+    //Сейчас не сохраняется сортинг. Добавить переменную, которая будет отдельно хранить фильтеринг.
+    let currentOrdersData = getOrdersData();
     let currentCellWithArrow;
 
     fillTableBody(currentOrdersData);
 
-    const inputElement = document.getElementById('search');
+    const searchElement = document.getElementById('search');
+    searchElement.oninput = function (event) { search(event.target.value) };
 
-    inputElement.addEventListener("input", (event) => search(event.target.value));
+    const transactionIdHeaderElement = document.getElementById('transaction_id_header');
+    transactionIdHeaderElement.onclick = function () {
+        fillTableBody(sortedData.sort((order1, order2) => order1.transaction_id.localeCompare(order2.transaction_id)));
+        setArrowToElement(this);
+    };
+
+    const orderDateHeaderElement = document.getElementById('order_date_header');
+    orderDateHeaderElement.onclick = function () {
+        fillTableBody(sortedData.sort((order1, order2) => {
+            return order2.created_at > order1.created_at ? -1 : order2.created_at < order1.created_at ? 1 : 0;
+        }));
+        setArrowToElement(this);
+    };
+
+    const orderAmountHeaderElement = document.getElementById('order_amount_header');
+    orderAmountHeaderElement.onclick = function () {
+        fillTableBody(sortedData.sort((order1, order2) => {
+            return order1.total < order2.total ? -1 : order1.total > order2.total ? 1 : 0;
+        }));
+        setArrowToElement(this);
+    };
+
+    const userInfoHeaderElement = document.getElementById('user_info_header');
+    userInfoHeaderElement.onclick = function () {
+        fillTableBody(sortedData.sort((order1, order2) => order1.userFullName.localeCompare(order2.userFullName)));
+        setArrowToElement(this);
+    };
+
+    const cardTypeHeaderElement = document.getElementById('card_type_header');
+    cardTypeHeaderElement.onclick = function () {
+        fillTableBody(sortedData.sort((order1, order2) => order1.card_type.localeCompare(order2.card_type)));
+        setArrowToElement(this);
+    };
+
+    const locationHeaderElement = document.getElementById('location_header');
+    locationHeaderElement.onclick = function () {
+        fillTableBody(sortedData.sort((order1, order2) => {
+            if (order1.order_country.localeCompare(order2.order_country) < 0) {
+                return -1;
+            }
+            if (order2.order_country.localeCompare(order1.order_country) > 0) {
+                return 1;
+            }
+            if (order1.order_ip.localeCompare(order2.order_ip) < 0) {
+                return 1;
+            }
+
+            if (order2.order_ip.localeCompare(order1.order_ip) > 0) {
+                return -1;
+            }
+            return 0;
+        }));
+        setArrowToElement(this);
+    };
 
     function getOrdersData() {
         return orders.map(order => {
@@ -38,86 +95,16 @@ export default (function () {
                 user: user,
                 company: company,
                 userFullName: `${user.first_name} ${user.last_name}`
-
             }
         })
     }
 
-    const transactionIdHeaderElement = document.getElementById('transaction_id_header');
-
-    transactionIdHeaderElement.onclick = function () {
-        fillTableBody(currentOrdersData.sort((order1, order2) => order1.transaction_id.localeCompare(order2.transaction_id)));
-        setArrowToElement(this);
-    };
-
-    const orderDateHeaderElement = document.getElementById('order_date_header');
-
-    orderDateHeaderElement.onclick = function () {
-        fillTableBody(currentOrdersData.sort((order1, order2) => {
-            return order2.created_at > order1.created_at ? -1 : order2.created_at < order1.created_at ? 1 : 0;
-        }));
-        setArrowToElement(this);
-    };
-
-    const orderAmountHeaderElement = document.getElementById('order_amount_header');
-
-    orderAmountHeaderElement.onclick = function () {
-        fillTableBody(currentOrdersData.sort((order1, order2) => {
-            return order1.total < order2.total ? -1 : order1.total > order2.total ? 1 : 0;
-        }));
-        setArrowToElement(this);
-    };
-
-    const userInfoHeaderElement = document.getElementById('user_info_header');
-
-    userInfoHeaderElement.onclick = function () {
-        fillTableBody(currentOrdersData.sort((order1, order2) => {
-            return order1.userFullName < order2.userFullName ? -1 : order1.userFullName > order2.userFullName ? 1 : 0;
-        }));
-        setArrowToElement(this);
-    };
-
-    const cardTypeHeaderElement = document.getElementById('card_type_header');
-
-    cardTypeHeaderElement.onclick = function () {
-        fillTableBody(currentOrdersData.sort((order1, order2) => {
-            return order1.card_type < order2.card_type ? -1 : order1.card_type > order2.card_type ? 1 : 0;
-        }));
-        setArrowToElement(this);
-    };
-
-    const locationHeaderElement = document.getElementById('location_header');
-
-    locationHeaderElement.onclick = function () {
-        fillTableBody(currentOrdersData.sort((order1, order2) => {
-            if (order1.order_country.localeCompare(order2.order_country) < 0) {
-                return -1;
-            }
-            if (order2.order_country.localeCompare(order1.order_country) > 0) {
-                return 1;
-            }
-            if (order1.order_ip.localeCompare(order2.order_ip) < 0) {
-                return 1;
-            }
-
-            if (order2.order_ip.localeCompare(order1.order_ip) > 0) {
-                return -1;
-            }
-            return 0;
-        }));
-        setArrowToElement(this);
-    };
-
     function search(dataFromUser) {
-        debugger;
-
-
-        currentOrdersData = ordersData.filter(order => {
+        currentOrdersData = sortedData.filter(order => {
             return order.total.toString().includes(dataFromUser) || order.userFullName.includes(dataFromUser) || order.transaction_id.includes(dataFromUser) || order.card_type.includes(dataFromUser) || order.order_ip.includes(dataFromUser) || order.order_country.includes(dataFromUser);
         });
 
         fillTableBody(currentOrdersData);
-
     }
 
     function getArrowElement() {
@@ -140,7 +127,7 @@ export default (function () {
             addTableRow(order, tableBody);
         });
 
-        createStatistics();
+        addStatisticsSection();
     }
 
     function clearTableBody() {
@@ -160,40 +147,21 @@ export default (function () {
         tableBody.appendChild(tableRow);
     }
 
-    function createStatistics() {
-        crateTableRowWithJointColumns('Orders Count');
-        crateTableRowWithJointColumns('Orders Total');
-        crateTableRowWithJointColumns('Median Value');
-        crateTableRowWithJointColumns('Average Check');
-        crateTableRowWithJointColumns('Average Check (Female)');
-        crateTableRowWithJointColumns('Average Check (Male)');
+    function addStatisticsSection() {
+        crateTableRowWithJointColumns('Orders Count', currentOrdersData.length);
+        crateTableRowWithJointColumns('Orders Total', `$ ${getTotalAmount(currentOrdersData)}`);
+        crateTableRowWithJointColumns('Median Value', `$ ${getMedian()}`);
+        crateTableRowWithJointColumns('Average Check', `$ ${getAverageCheck(currentOrdersData)}`);
+        crateTableRowWithJointColumns('Average Check (Female)', `$ ${getAverageCheck(getOrdersByGender('Female'))}`);
+        crateTableRowWithJointColumns('Average Check (Male)', `$ ${getAverageCheck(getOrdersByGender('Male'))}`);
     }
 
-    function crateTableRowWithJointColumns(name) {
-        let statisticsResult;
+    function crateTableRowWithJointColumns(name, value) {
         const tableRow = document.createElement('TR');
         const dataHeader = addTableCell(tableRow, name);
         dataHeader.colSpan = "4";
-        if (name === 'Orders Count') {
-            statisticsResult = addTableCell(tableRow, getTotalOrders(currentOrdersData));
-        } else if (name === 'Orders Total') {
-            statisticsResult = addTableCell(tableRow, `$ ${getTotalAmount(currentOrdersData)}`);
-        } else if (name === 'Median Value') {
-            statisticsResult = addTableCell(tableRow, `$ ${getMedian()}`);
-        } else if (name === 'Average Check') {
-            statisticsResult = addTableCell(tableRow, `$ ${getAverageCheck(currentOrdersData)}`);
-        } else if (name === 'Average Check (Female)') {
-            statisticsResult = addTableCell(tableRow, `$ ${getAverageCheck(getOrdersByGender('Female'))}`);
-        } else if (name === 'Average Check (Male)') {
-            statisticsResult = addTableCell(tableRow, `$ ${getAverageCheck(getOrdersByGender('Male'))}`);
-        }
-
-        statisticsResult.colSpan = "3";
+        addTableCell(tableRow, value).colSpan = "3";
         tableBody.appendChild(tableRow);
-    }
-
-    function getTotalOrders(array) {
-        return array.length;
     }
 
     function getOrdersByGender(gender) {
@@ -203,16 +171,12 @@ export default (function () {
     }
 
     function getAverageCheck(orderItems) {
-        return ((getTotalAmount(orderItems) / getTotalOrders(orderItems)).toFixed(2));
+        return ((getTotalAmount(orderItems) / orderItems.length).toFixed(2));
     }
 
     function getTotalAmount(array) {
         return (array.reduce((amount, currentValue) => {
-            if (currentValue.total) {
-                return amount + parseFloat(currentValue.total);
-            } else {
-                return amount + parseFloat(currentValue);
-            }
+            return amount + parseFloat(currentValue.total);
         }, 0)).toFixed(2);
     }
 
@@ -231,8 +195,7 @@ export default (function () {
             return order1.total > order2.total ? -1 : order1.total < order2.total ? 1 : 0;
         });
 
-        return sortedOrdersTotal.map((currentValue) => (
-            (currentValue.total)));
+        return sortedOrdersTotal.map((currentValue) => ((currentValue.total)));
     }
 
     function getFormattedCardNumber(cardNumber) {

@@ -6,13 +6,22 @@
 </head>
 <body>
     <div id="app">
-        <table>
-            <thead>
+        <table class="table">
+            <colgroup>
+                <col span="1" class="middle-width-column">
+                <col span="1" class="large-width-column">
+                <col span="1" class="small-width-column">
+                <col span="1" class="middle-width-column">
+                <col span="1" class="middle-width-column">
+                <col span="1" class="middle-width-column">
+                <col span="1" class="middle-width-column">
+            </colgroup>
+            <thead class="thead-dark">
                 <tr>
-                    <th>Search:</th>
-                    <th><input type="text" id="search"></th>
+                    <th><label for="search">Search</label></th>
+                    <th colspan="6"><input type="text" id="search"></th>
                 </tr>
-                <tr>
+                <tr class="column-names">
                     <th id="transaction_id_header">Transaction ID </th>
                     <th id="user_info_header">User Info</th>
                     <th id="order_date_header">Order Date</th>
@@ -22,9 +31,7 @@
                     <th id="location_header">Location</th>
                 </tr>
             </thead>
-            <tbody id="orders_table_body">
-
-            </tbody>
+            <tbody id="orders_table_body"></tbody>
         </table>
     </div>
 </body>
