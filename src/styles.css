@@ -1,0 +1,40 @@
+#app .table {
+    table-layout: fixed;
+}
+
+#app .table td {
+    word-break: break-word;
+}
+
+.hidden {
+    display: none;
+}
+
+.column-names th {
+    cursor: pointer;
+}
+
+#card_number_header {
+    cursor: default;
+}
+
+.user_data {
+    word-break: break-word;
+}
+
+.user_data img {
+    border-radius: 50%;
+    background-color: lightgrey;
+}
+
+.large-width-column {
+    width: 20%;
+}
+
+.small-width-column {
+    width: 10%;
+}
+
+.middle-width-column {
+    width: 15%;
+}

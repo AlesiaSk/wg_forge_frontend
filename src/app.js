@@ -7,7 +7,6 @@ import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
-
 export default (function () {
     const tableBody = document.getElementById('orders_table_body');
     let currentOrdersData = getOrdersData();
@@ -17,7 +16,9 @@ export default (function () {
     fillTableBody(currentOrdersData);
 
     const searchElement = document.getElementById('search');
-    searchElement.oninput = function (event) { search(event.target.value) };
+    searchElement.oninput = function (event) {
+        search(event.target.value)
+    };
 
     const transactionIdHeaderElement = document.getElementById('transaction_id_header');
     transactionIdHeaderElement.onclick = function () {
@@ -121,11 +122,14 @@ export default (function () {
     function fillTableBody(currentOrdersData) {
         clearTableBody();
 
-        currentOrdersData.forEach(order => {
-            addTableRow(order, tableBody);
-        });
-
-        addStatisticsSection();
+        if (currentOrdersData.length) {
+            currentOrdersData.forEach(order => {
+                addTableRow(order, tableBody);
+            });
+            addStatisticsSection();
+        } else {
+            addEmptyTableRow(tableBody);
+        }
     }
 
     function clearTableBody() {
@@ -142,6 +146,13 @@ export default (function () {
         addTableCell(tableRow, getFormattedCardNumber(order.card_number));
         addTableCell(tableRow, order.card_type);
         addTableCell(tableRow, `${order.order_country} (${order.order_ip})`);
+        tableBody.appendChild(tableRow);
+    }
+
+    function addEmptyTableRow(tableBody) {
+        const tableRow = document.createElement('TR');
+        tableRow.style = 'text-align: center';
+        addTableCell(tableRow, 'Nothing found').colSpan = '7';
         tableBody.appendChild(tableRow);
     }
 
@@ -177,7 +188,6 @@ export default (function () {
     }
 
     function getTotalAmount(array) {
-        debugger;
         return (array.reduce((amount, currentValue) => {
             return amount + parseFloat(currentValue.total);
         }, 0)).toFixed(2);
