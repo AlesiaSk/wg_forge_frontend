@@ -1,6 +1,7 @@
 import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+
 export default (async function () {
     const ordersResponse = await fetch('http://localhost:9000/api/orders.json');
     const orders = await ordersResponse.json();
@@ -13,51 +14,59 @@ export default (async function () {
     let currentOrdersData = getOrdersData();
     let sortedData = currentOrdersData;
     let currentCellWithArrow;
+    let currentSearchString = '';
 
     fillTableBody(currentOrdersData);
 
     const searchElement = document.getElementById('search');
     searchElement.oninput = function (event) {
-        search(event.target.value)
+        currentSearchString = event.target.value;
+        const filteredOrders = getFilteredOrders(sortedData, currentSearchString);
+        fillTableBody(filteredOrders);
     };
 
     const transactionIdHeaderElement = document.getElementById('transaction_id_header');
     transactionIdHeaderElement.onclick = function () {
-        fillTableBody(sortedData.sort((order1, order2) => order1.transaction_id.localeCompare(order2.transaction_id)));
+        sortedData.sort((order1, order2) => order1.transaction_id.localeCompare(order2.transaction_id));
+        onTableHeaderClick();
         setArrowToElement(this);
     };
 
     const orderDateHeaderElement = document.getElementById('order_date_header');
     orderDateHeaderElement.onclick = function () {
-        fillTableBody(sortedData.sort((order1, order2) => {
+        sortedData.sort((order1, order2) => {
             return order2.created_at > order1.created_at ? -1 : order2.created_at < order1.created_at ? 1 : 0;
-        }));
+        });
+        onTableHeaderClick();
         setArrowToElement(this);
     };
 
     const orderAmountHeaderElement = document.getElementById('order_amount_header');
     orderAmountHeaderElement.onclick = function () {
-        fillTableBody(sortedData.sort((order1, order2) => {
+        sortedData.sort((order1, order2) => {
             return order1.total < order2.total ? -1 : order1.total > order2.total ? 1 : 0;
-        }));
+        });
+        onTableHeaderClick();
         setArrowToElement(this);
     };
 
     const userInfoHeaderElement = document.getElementById('user_info_header');
     userInfoHeaderElement.onclick = function () {
-        fillTableBody(sortedData.sort((order1, order2) => order1.userFullName.localeCompare(order2.userFullName)));
+        sortedData.sort((order1, order2) => order1.userFullName.localeCompare(order2.userFullName));
+        onTableHeaderClick();
         setArrowToElement(this);
     };
 
     const cardTypeHeaderElement = document.getElementById('card_type_header');
     cardTypeHeaderElement.onclick = function () {
-        fillTableBody(sortedData.sort((order1, order2) => order1.card_type.localeCompare(order2.card_type)));
+        sortedData.sort((order1, order2) => order1.card_type.localeCompare(order2.card_type));
+        onTableHeaderClick();
         setArrowToElement(this);
     };
 
     const locationHeaderElement = document.getElementById('location_header');
     locationHeaderElement.onclick = function () {
-        fillTableBody(sortedData.sort((order1, order2) => {
+        sortedData.sort((order1, order2) => {
             if (order1.order_country.localeCompare(order2.order_country) < 0) {
                 return -1;
             }
@@ -72,7 +81,8 @@ export default (async function () {
                 return -1;
             }
             return 0;
-        }));
+        });
+        onTableHeaderClick();
         setArrowToElement(this);
     };
 
@@ -99,12 +109,18 @@ export default (async function () {
         })
     }
 
-    function search(dataFromUser) {
-        currentOrdersData = sortedData.filter(order => {
-            return order.total.toString().includes(dataFromUser) || order.userFullName.includes(dataFromUser) || order.transaction_id.includes(dataFromUser) || order.card_type.includes(dataFromUser) || order.order_ip.includes(dataFromUser) || order.order_country.includes(dataFromUser);
-        });
+    function onTableHeaderClick() {
+        if (currentSearchString) {
+            fillTableBody(getFilteredOrders(sortedData, currentSearchString));
+        } else {
+            fillTableBody(sortedData);
+        }
+    }
 
-        fillTableBody(currentOrdersData);
+    function getFilteredOrders(orders, search) {
+        return orders.filter(order => {
+            return order.total.toString().includes(search) || order.userFullName.includes(search) || order.transaction_id.includes(search) || order.card_type.includes(search) || order.order_ip.includes(search) || order.order_country.includes(search);
+        });
     }
 
     function getArrowElement() {
@@ -122,9 +138,9 @@ export default (async function () {
 
     function fillTableBody(currentOrdersData) {
         clearTableBody();
+
         if (currentOrdersData.length) {
             currentOrdersData.forEach(order => {
-
                 addTableRow(order, tableBody);
             });
             addStatisticsSection();
@@ -210,8 +226,8 @@ export default (async function () {
         }
     }
 
-    function getDescendingSortingAmount(currentOrdersData) {
-        const sortedOrdersTotal = currentOrdersData.concat().sort((order1, order2) => {
+    function getDescendingSortingAmount(ordersData) {
+        const sortedOrdersTotal = ordersData.concat().sort((order1, order2) => {
             return order1.total > order2.total ? -1 : order1.total < order2.total ? 1 : 0;
         });
 
@@ -319,3 +335,4 @@ export default (async function () {
         return ordersDataElement;
     }
 }());
+
