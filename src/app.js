@@ -300,11 +300,10 @@ export default (async function () {
     function getFormattedDate(date, withMinutes) {
         if(withMinutes){
             let hours = date.getHours();
-            const period = hours>= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12;
+            const period = hours >= 12 ? 'PM' : 'AM';
+            hours = (hours % 12) ? hours : 12;
             return (`${("0" + date.getDate()).slice(-2)}/${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()},
-             ${hours}:${("0" + date.getMinutes()).slice(-2)}:${("0" + date.getSeconds()).slice(-2)} ${period}`);
+             ${("0" + hours).slice(-2)}:${("0" + date.getMinutes()).slice(-2)}:${("0" + date.getSeconds()).slice(-2)} ${period}`);
         }
         return (`${("0" + date.getDate()).slice(-2)}/${("0" + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()}`);
     }
